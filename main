@@ -1,5 +1,5 @@
-#define Trig 13 // Define Trig pin for ESP32
-#define Echo 12 // Define Echo pin for ESP32
+#define Trig 14 // Define Trig pin for ESP32
+#define Echo 26 // Define Echo pin for ESP32
 
 const int in1 = 5;    // Define L298N-2 pin connected to D5
 const int in2 = 18;   // Define L298N-2 pin connected to D18
@@ -45,7 +45,7 @@ void loop()
   Serial.println(" cm");
 
   // Check distance and control motors
-  if (distance_sm > 2) // If distance is greater than 25 cm
+  if (distance_sm > 25) // If distance is greater than 25 cm
   {     
       Serial.println("Path is clear. Moving forward.");
       
