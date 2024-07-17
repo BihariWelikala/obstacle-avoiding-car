@@ -1,0 +1,76 @@
+#define Trig 13 // Define Trig pin for ESP32
+#define Echo 12 // Define Echo pin for ESP32
+
+const int in1 = 5;    // Define L298N-2 pin connected to D5
+const int in2 = 18;   // Define L298N-2 pin connected to D18
+const int in3 = 19;   // Define L298N-2 pin connected to D19
+const int in4 = 21;   // Define L298N-2 pin connected to D21
+const int enA = 4;    // Define L298N-2 pin connected to D4
+const int enB = 22;   // Define L298N-2 pin connected to D22
+
+void setup() 
+{  
+  Serial.begin(115200); // Start the serial communication
+
+  pinMode(Trig, OUTPUT); // Set Trig pin as OUTPUT
+  pinMode(Echo, INPUT);  // Set Echo pin as INPUT
+
+  pinMode(in1, OUTPUT); // Set motor control pins as OUTPUT
+  pinMode(in2, OUTPUT); 
+  pinMode(in3, OUTPUT); 
+  pinMode(in4, OUTPUT); 
+  pinMode(enA, OUTPUT);  // Set motor enable pins as OUTPUT
+  pinMode(enB, OUTPUT); 
+}
+
+unsigned int impulseTime = 0; 
+unsigned int distance_sm = 0; 
+
+void loop() 
+{  
+  // Trigger the ultrasonic sensor
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2); 
+  digitalWrite(Trig, HIGH); 
+  delayMicroseconds(10); // 10 microseconds 
+  digitalWrite(Trig, LOW);
+
+  // Measure the pulse duration
+  impulseTime = pulseIn(Echo, HIGH); 
+  distance_sm = impulseTime / 58; // Convert pulse duration to centimeters
+
+  // Print the measured distance
+  Serial.print("Distance: ");
+  Serial.print(distance_sm);
+  Serial.println(" cm");
+
+  // Check distance and control motors
+  if (distance_sm > 2) // If distance is greater than 25 cm
+  {     
+      Serial.println("Path is clear. Moving forward.");
+      
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, HIGH);
+      analogWrite(enA, 60);
+
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+      analogWrite(enB, 60);
+  }  
+  else // If distance is 25 cm or less
+  {   
+      Serial.println("Obstacle detected. Turning.");
+      
+      digitalWrite(in1, HIGH);
+      digitalWrite(in2, LOW);
+      analogWrite(enA, 100);
+
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+      analogWrite(enB, 100);
+      
+      delay(1100); // Adjust turn time if stuck or not exiting a corner
+  }   
+
+  delay(50); 
+}
