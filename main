@@ -1,19 +1,25 @@
-#define Trig 14 // Define Trig pin for ESP32
-#define Echo 26 // Define Echo pin for ESP32
+#define Trig1 22 // Define Trig 1 pin for ESP32 - Left
+#define Echo1 23 // Define Echo 1 pin for ESP32 - Left
 
-const int in1 = 5;    // Define L298N-2 pin connected to D5
-const int in2 = 18;   // Define L298N-2 pin connected to D18
-const int in3 = 19;   // Define L298N-2 pin connected to D19
-const int in4 = 21;   // Define L298N-2 pin connected to D21
-const int enA = 4;    // Define L298N-2 pin connected to D4
-const int enB = 22;   // Define L298N-2 pin connected to D22
+#define Trig2 25 // Define Trig 2 pin for ESP32 - Right
+#define Echo2 26 // Define Echo 2 pin for ESP32 - Right
+
+const int in1 = 18;   // Define L298N pin connected to D18
+const int in2 = 5;    // Define L298N pin connected to D5
+const int in3 = 4;    // Define L298N pin connected to D4
+const int in4 = 2;    // Define L298N pin connected to D2
+const int enA = 19;   // Define L298N pin connected to D19
+const int enB = 15;   // Define L298N pin connected to D15
 
 void setup() 
 {  
   Serial.begin(115200); // Start the serial communication
 
-  pinMode(Trig, OUTPUT); // Set Trig pin as OUTPUT
-  pinMode(Echo, INPUT);  // Set Echo pin as INPUT
+  pinMode(Trig1, OUTPUT); // Set Trig1 pin as OUTPUT
+  pinMode(Echo1, INPUT);  // Set Echo1 pin as INPUT
+
+  pinMode(Trig2, OUTPUT); // Set Trig1 pin as OUTPUT
+  pinMode(Echo2, INPUT);  // Set Echo1 pin as INPUT
 
   pinMode(in1, OUTPUT); // Set motor control pins as OUTPUT
   pinMode(in2, OUTPUT); 
@@ -23,53 +29,136 @@ void setup()
   pinMode(enB, OUTPUT); 
 }
 
-unsigned int impulseTime = 0; 
-unsigned int distance_sm = 0; 
+unsigned int impulseTime1 = 0; 
+unsigned int distance_sm1 = 0; 
+
+unsigned int impulseTime2 = 0; 
+unsigned int distance_sm2 = 0; 
+
+void moveForward() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 90); // Adjust speed as needed (lower value for slower speed)
+
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
+}
+
+void stop() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 0);
+
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  analogWrite(enB, 0);
+}
+
+void turnRight() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 90); // Adjust speed as needed (lower value for slower speed)
+
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
+  
+  delay(2500); // Adjust turn time as needed
+  
+  stop();
+}
+
+void turnLeft() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  analogWrite(enA, 90); // Adjust speed as needed (lower value for slower speed)
+
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
+  
+  delay(2500); // Adjust turn time as needed
+  
+  stop();
+}
+
+void moveBackward() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  analogWrite(enA, 90); // Adjust speed as needed (lower value for slower speed)
+
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
+}
 
 void loop() 
 {  
-  // Trigger the ultrasonic sensor
-  digitalWrite(Trig, LOW);
+  // Trigger the ultrasonic sensor 1
+  digitalWrite(Trig1, LOW);
   delayMicroseconds(2); 
-  digitalWrite(Trig, HIGH); 
+  digitalWrite(Trig1, HIGH); 
   delayMicroseconds(10); // 10 microseconds 
-  digitalWrite(Trig, LOW);
+  digitalWrite(Trig1, LOW);
 
-  // Measure the pulse duration
-  impulseTime = pulseIn(Echo, HIGH); 
-  distance_sm = impulseTime / 58; // Convert pulse duration to centimeters
+  // Measure the pulse duration 1
+  impulseTime1 = pulseIn(Echo1, HIGH); 
+  distance_sm1 = impulseTime1 / 58; // Convert pulse duration to centimeters
+
+  // Trigger the ultrasonic sensor 2
+  digitalWrite(Trig2, LOW);
+  delayMicroseconds(2); 
+  digitalWrite(Trig2, HIGH); 
+  delayMicroseconds(10); // 10 microseconds 
+  digitalWrite(Trig2, LOW);
+
+  // Measure the pulse duration 2
+  impulseTime2 = pulseIn(Echo2, HIGH); 
+  distance_sm2 = impulseTime2 / 58; // Convert pulse duration to centimeters
 
   // Print the measured distance
-  Serial.print("Distance: ");
-  Serial.print(distance_sm);
+  Serial.print("Distance 1: ");
+  Serial.print(distance_sm1);
+  Serial.println(" cm");
+
+  Serial.print("Distance 2: ");
+  Serial.print(distance_sm2);
   Serial.println(" cm");
 
   // Check distance and control motors
-  if (distance_sm > 25) // If distance is greater than 25 cm
+  if (distance_sm1 > 30 && distance_sm2 > 30) // If both distances are greater than 30 cm
   {     
       Serial.println("Path is clear. Moving forward.");
-      
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, HIGH);
-      analogWrite(enA, 60);
-
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-      analogWrite(enB, 60);
+      delay(500);
+      moveForward();
   }  
-  else // If distance is 25 cm or less
-  {   
-      Serial.println("Obstacle detected. Turning.");
-      
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
-      analogWrite(enA, 100);
 
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-      analogWrite(enB, 100);
+  else if (distance_sm1 > 30 && distance_sm2 <= 30) // If left side is clear
+  {     
+      Serial.println("Left is clear. Turning left.");
+      delay(500);
+      turnLeft();
+  }  
+
+  else if (distance_sm1 <= 30 && distance_sm2 > 30) // If right side is clear
+  {     
+      Serial.println("Right is clear. Turning right.");
+      delay(500);
+      turnRight();
+  }  
+  else // If distances 1 and 2 both are 30 cm or less
+  {   
+      Serial.println("Obstacle detected. Turn Around");
       
-      delay(1100); // Adjust turn time if stuck or not exiting a corner
+      stop();
+      delay(500); // Short delay before going backward
+
+      moveBackward();
+      delay(500);
+
+      turnRight();
+      turnRight();
   }   
 
   delay(50); 
