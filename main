@@ -64,7 +64,7 @@ void turnRight() {
   digitalWrite(in4, HIGH);
   analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
   
-  delay(2500); // Adjust turn time as needed
+  delay(500); // Adjust turn time as needed
   
   stop();
 }
@@ -78,7 +78,7 @@ void turnLeft() {
   digitalWrite(in4, LOW);
   analogWrite(enB, 90); // Adjust speed as needed (lower value for slower speed)
   
-  delay(2500); // Adjust turn time as needed
+  delay(500); // Adjust turn time as needed
   
   stop();
 }
@@ -137,15 +137,19 @@ void loop()
   else if (distance_sm1 > 30 && distance_sm2 <= 30) // If left side is clear
   {     
       Serial.println("Left is clear. Turning left.");
-      delay(500);
+      moveBackward();
+      delay(1000);
       turnLeft();
+      delay(2500);
   }  
 
   else if (distance_sm1 <= 30 && distance_sm2 > 30) // If right side is clear
   {     
       Serial.println("Right is clear. Turning right.");
-      delay(500);
+      moveBackward();
+      delay(1000);
       turnRight();
+      delay(2500);
   }  
   else // If distances 1 and 2 both are 30 cm or less
   {   
@@ -155,10 +159,12 @@ void loop()
       delay(500); // Short delay before going backward
 
       moveBackward();
-      delay(500);
+      delay(1000);
 
       turnRight();
+      delay(2500);
       turnRight();
+      delay(2500);
   }   
 
   delay(50); 
